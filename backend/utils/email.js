@@ -1,8 +1,13 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import crypto from "crypto";
 
-const resend = new Resend(
-  process.env.RESEND_API_KEY || "re_123456789_dummy_key");
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 export const generateVerificationToken = () =>
   crypto.randomBytes(32).toString("hex");
@@ -10,8 +15,8 @@ export const generateVerificationToken = () =>
 export const sendVerificationEmail = async (email, name, token) => {
   const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
 
-  await resend.emails.send({
-    from: "StockFlow IMS <onboarding@resend.dev>",
+  await transporter.sendMail({
+    from: `"StockFlow IMS" <${process.env.GMAIL_USER}>`,
     to: email,
     subject: "Verify your StockFlow IMS account",
     html: `
