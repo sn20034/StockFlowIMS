@@ -1,13 +1,11 @@
-import nodemailer from "nodemailer";
+import SibApiV3Sdk from "@getbrevo/brevo";
 import crypto from "crypto";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+apiInstance.setApiKey(
+  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY,
+);
 
 export const generateVerificationToken = () =>
   crypto.randomBytes(32).toString("hex");
@@ -15,11 +13,11 @@ export const generateVerificationToken = () =>
 export const sendVerificationEmail = async (email, name, token) => {
   const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
 
-  await transporter.sendMail({
-    from: `"StockFlow IMS" <${process.env.GMAIL_USER}>`,
-    to: email,
+  const sendSmtpEmail = {
+    sender: { name: "StockFlow IMS", email: process.env.BREVO_SENDER_EMAIL },
+    to: [{ email, name }],
     subject: "Verify your StockFlow IMS account",
-    html: `
+    htmlContent: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
         <h2>Welcome to StockFlow IMS, ${name}!</h2>
         <p>Please verify your email address to activate your account.</p>
@@ -31,5 +29,7 @@ export const sendVerificationEmail = async (email, name, token) => {
         <p style="color:#888; font-size:13px;">This link expires in 24 hours.</p>
       </div>
     `,
-  });
+  };
+
+  await apiInstance.sendTransacEmail(sendSmtpEmail);
 };
