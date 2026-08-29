@@ -1,4 +1,4 @@
-import SibApiV3Sdk from "@getbrevo/brevo";
+import * as SibApiV3Sdk from "@getbrevo/brevo";
 import crypto from "crypto";
 
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
