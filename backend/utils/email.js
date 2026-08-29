@@ -1,14 +1,9 @@
-import {
-  TransactionalEmailsApi,
-  TransactionalEmailsApiApiKeys,
-} from "@getbrevo/brevo";
+import { BrevoClient } from "@getbrevo/brevo";
 import crypto from "crypto";
 
-const apiInstance = new TransactionalEmailsApi();
-apiInstance.setApiKey(
-  TransactionalEmailsApiApiKeys.apiKey,
-  process.env.BREVO_API_KEY,
-);
+const brevo = new BrevoClient({
+  apiKey: process.env.BREVO_API_KEY,
+});
 
 export const generateVerificationToken = () =>
   crypto.randomBytes(32).toString("hex");
@@ -16,7 +11,7 @@ export const generateVerificationToken = () =>
 export const sendVerificationEmail = async (email, name, token) => {
   const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
 
-  const sendSmtpEmail = {
+  await brevo.transactionalEmails.sendTransacEmail({
     sender: { name: "StockFlow IMS", email: process.env.BREVO_SENDER_EMAIL },
     to: [{ email, name }],
     subject: "Verify your StockFlow IMS account",
@@ -32,7 +27,5 @@ export const sendVerificationEmail = async (email, name, token) => {
         <p style="color:#888; font-size:13px;">This link expires in 24 hours.</p>
       </div>
     `,
-  };
-
-  await apiInstance.sendTransacEmail(sendSmtpEmail);
+  });
 };
